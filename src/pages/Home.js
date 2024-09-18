@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import './Home.css'; // Create a CSS file for styling
 
 function Home() {
   const [data, setData] = useState([]);
@@ -21,13 +22,32 @@ function Home() {
   }, []);
 
   return (
-    <div>
-      <h2>Home Page</h2>
-      <ul>
-        {data.map(record => (
-          <li key={record.id}>{record.fields.Name}</li>
-        ))}
-      </ul>
+    <div className="home-container">
+      <h2>Car List</h2>
+      <table className="data-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Color</th>
+            <th>Created Time</th>
+          </tr>
+        </thead>
+        <tbody>
+          {data.length === 0 ? (
+            <tr>
+              <td colSpan="3">No data available</td>
+            </tr>
+          ) : (
+            data.map(record => (
+              <tr key={record.id}>
+                <td>{record.fields.Name}</td>
+                <td>{record.fields.Color}</td>
+                <td>{new Date(record.createdTime).toLocaleString()}</td>
+              </tr>
+            ))
+          )}
+        </tbody>
+      </table>
     </div>
   );
 }

@@ -1,0 +1,50 @@
+.home-container {
+    width: 80%;
+    margin: 20px auto;
+    font-family: Arial, sans-serif;
+  }
+  
+  h2 {
+    text-align: center;
+    color: #333;
+  }
+  
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+  }
+  
+  .data-table thead {
+    background-color: #4CAF50;
+    color: white;
+  }
+  
+  .data-table th, .data-table td {
+    padding: 12px 15px;
+    border: 1px solid #ddd;
+    text-align: left;
+  }
+  
+  .data-table tr:nth-child(even) {
+    background-color: #f2f2f2;
+  }
+  
+  .data-table tr:hover {
+    background-color: #ddd;
+  }
+  
+  .data-table th {
+    font-size: 1.1rem;
+  }
+  
+  .data-table td {
+    font-size: 0.9rem;
+  }
+  
+  @media (max-width: 768px) {
+    .data-table {
+      font-size: 0.8rem;
+    }
+  }
+  
