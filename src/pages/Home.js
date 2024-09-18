@@ -14,7 +14,7 @@ function Home() {
         });
         setData(response.data.records);
       } catch (error) {
-        console.error("Error fetching data from Airtable asdasdasdas", error);
+        console.error("Error fetching data from Airtable", error);
       }
     };
     fetchData();
