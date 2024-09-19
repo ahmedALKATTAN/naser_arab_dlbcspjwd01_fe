@@ -124,6 +124,9 @@ function Home() {
             <th></th> {/* Checkbox column */}
             <th>Name</th>
             <th>Color</th>
+            <th>Brand</th>
+            <th>Model</th>
+            <th>Year</th>
             <th>Created Time</th>
             <th>Details</th>
           </tr>
@@ -149,6 +152,9 @@ function Home() {
                 </td>
                 <td>{record.fields.Name}</td>
                 <td>{record.fields.Color}</td>
+                <td>{record.fields.Brand}</td>
+                <td>{record.fields.Model}</td>
+                <td>{record.fields.Year}</td>
                 <td>{new Date(record.createdTime).toLocaleString()}</td>
                 <td className="icon-cell">
                   <FontAwesomeIcon
@@ -219,6 +225,69 @@ function Home() {
                       },
                     })
                   : setNewRecord({ ...newRecord, Color: e.target.value })
+              }
+            />
+          </label>
+
+          <label>
+            Brand:
+            <input
+              type="text"
+              value={
+                selectedRecord.id ? selectedRecord.fields.Brand : newRecord.Brand
+              }
+              onChange={(e) =>
+                selectedRecord.id
+                  ? setSelectedRecord({
+                      ...selectedRecord,
+                      fields: {
+                        ...selectedRecord.fields,
+                        Brand: e.target.value,
+                      },
+                    })
+                  : setNewRecord({ ...newRecord, Brand: e.target.value })
+              }
+            />
+          </label>
+
+          <label>
+            Model:
+            <input
+              type="text"
+              value={
+                selectedRecord.id ? selectedRecord.fields.Model : newRecord.Model
+              }
+              onChange={(e) =>
+                selectedRecord.id
+                  ? setSelectedRecord({
+                      ...selectedRecord,
+                      fields: {
+                        ...selectedRecord.fields,
+                        Model: e.target.value,
+                      },
+                    })
+                  : setNewRecord({ ...newRecord, Model: e.target.value })
+              }
+            />
+          </label>
+
+          <label>
+            Year:
+            <input
+              type="text"
+              value={
+                selectedRecord.id ? selectedRecord.fields.Year : newRecord.Year
+              }
+              onChange={(e) =>
+                selectedRecord.id
+                  ? setSelectedRecord({
+                      ...selectedRecord,
+                      fields: {
+                        ...selectedRecord.fields,
+                        Year: e.target.value,
+                      },
+                    })
+                  : setNewRecord({ ...newRecord, Year: e.target.value })
               }
             />
           </label>
