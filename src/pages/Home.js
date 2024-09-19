@@ -15,6 +15,8 @@ function Home() {
   const [newRecord, setNewRecord] = useState({ Name: '', Color: '' });
   const [selectedRecords, setSelectedRecords] = useState([]);
   const [errorMessage, setErrorMessage] = useState('');
+  const [validationErrors, setValidationErrors] = useState({});
+
 
   useEffect(() => {
     const fetchData = async () => {
@@ -44,6 +46,9 @@ function Home() {
   };
 
   const handleCreateRecord = async () => {
+    if (!validateFields()) {
+      return; // Don't submit if there are validation errors
+    }
     try {
       const response = await axios.post(
         API_URL,  // Use the constant for the URL
@@ -99,6 +104,29 @@ function Home() {
       setSelectedRecords([...selectedRecords, id]);
     }
   };
+
+  const validateFields = () => {
+    const errors = {};
+    const currentYear = new Date().getFullYear();
+  
+    if (!newRecord.Name) errors.Name = 'Name is required';
+    if (!newRecord.Color) errors.Color = 'Color is required';
+    if (!newRecord.Brand) errors.Brand = 'Brand is required';
+    if (!newRecord.Model) errors.Model = 'Model is required';
+  
+    // Validate Year (between 1900 and current year)
+    if (!newRecord.Year) {
+      errors.Year = 'Year is required';
+    } else if (isNaN(newRecord.Year) || newRecord.Year < 1900 || newRecord.Year > currentYear) {
+      errors.Year = `Year must be between 1900 and ${currentYear}`;
+    }
+  
+    setValidationErrors(errors);
+  
+    // If there are no errors, return true, else false
+    return Object.keys(errors).length === 0;
+  };
+  
   
 
   return (
@@ -107,12 +135,7 @@ function Home() {
 
       <div className="actions-box">
         <button onClick={() => openModal()}>Create New Car</button>
-        <button
-          onClick={handleDeleteRecords}
-          
-        >
-          Delete Selected
-        </button>
+        <button onClick={handleDeleteRecords}>Delete Selected</button>
       </div>
 
       {/* Error message */}
@@ -189,107 +212,85 @@ function Home() {
             Name:
             <input
               type="text"
-              value={
-                selectedRecord.id ? selectedRecord.fields.Name : newRecord.Name
-              }
+              value={newRecord.Name}
               onChange={(e) =>
-                selectedRecord.id
-                  ? setSelectedRecord({
-                      ...selectedRecord,
-                      fields: {
-                        ...selectedRecord.fields,
-                        Name: e.target.value,
-                      },
-                    })
-                  : setNewRecord({ ...newRecord, Name: e.target.value })
+                setNewRecord({ ...newRecord, Name: e.target.value })
               }
+              className={validationErrors.Name ? "input-error" : ""} // Apply error class conditionally
             />
+            {validationErrors.Name && (
+              <span className="input-field-error-message">
+                {validationErrors.Name}
+              </span>
+            )}
           </label>
 
           <label>
             Color:
             <input
               type="text"
-              value={
-                selectedRecord.id
-                  ? selectedRecord.fields.Color
-                  : newRecord.Color
-              }
+              value={newRecord.Color}
               onChange={(e) =>
-                selectedRecord.id
-                  ? setSelectedRecord({
-                      ...selectedRecord,
-                      fields: {
-                        ...selectedRecord.fields,
-                        Color: e.target.value,
-                      },
-                    })
-                  : setNewRecord({ ...newRecord, Color: e.target.value })
+                setNewRecord({ ...newRecord, Color: e.target.value })
               }
+              className={validationErrors.Color ? "input-error" : ""}
             />
+            {validationErrors.Color && (
+              <span className="input-field-error-message">
+                {validationErrors.Color}
+              </span>
+            )}
           </label>
 
           <label>
             Brand:
             <input
               type="text"
-              value={
-                selectedRecord.id ? selectedRecord.fields.Brand : newRecord.Brand
-              }
+              value={newRecord.Brand}
               onChange={(e) =>
-                selectedRecord.id
-                  ? setSelectedRecord({
-                      ...selectedRecord,
-                      fields: {
-                        ...selectedRecord.fields,
-                        Brand: e.target.value,
-                      },
-                    })
-                  : setNewRecord({ ...newRecord, Brand: e.target.value })
+                setNewRecord({ ...newRecord, Brand: e.target.value })
               }
+              className={validationErrors.Brand ? "input-error" : ""}
             />
+            {validationErrors.Brand && (
+              <span className="input-field-error-message">
+                {validationErrors.Brand}
+              </span>
+            )}
           </label>
 
           <label>
             Model:
             <input
               type="text"
-              value={
-                selectedRecord.id ? selectedRecord.fields.Model : newRecord.Model
-              }
+              value={newRecord.Model}
               onChange={(e) =>
-                selectedRecord.id
-                  ? setSelectedRecord({
-                      ...selectedRecord,
-                      fields: {
-                        ...selectedRecord.fields,
-                        Model: e.target.value,
-                      },
-                    })
-                  : setNewRecord({ ...newRecord, Model: e.target.value })
+                setNewRecord({ ...newRecord, Model: e.target.value })
               }
+              className={validationErrors.Model ? "input-error" : ""}
             />
+            {validationErrors.Model && (
+              <span className="input-field-error-message">
+                {validationErrors.Model}
+              </span>
+            )}
           </label>
 
           <label>
             Year:
             <input
               type="text"
-              value={
-                selectedRecord.id ? selectedRecord.fields.Year : newRecord.Year
-              }
+              value={newRecord.Year}
               onChange={(e) =>
-                selectedRecord.id
-                  ? setSelectedRecord({
-                      ...selectedRecord,
-                      fields: {
-                        ...selectedRecord.fields,
-                        Year: e.target.value,
-                      },
-                    })
-                  : setNewRecord({ ...newRecord, Year: e.target.value })
+                setNewRecord({ ...newRecord, Year: e.target.value })
               }
+              className={validationErrors.Year ? "input-error" : ""}
             />
+            {validationErrors.Year && (
+              <span className="input-field-error-message">
+                {validationErrors.Year}
+              </span>
+            )}
           </label>
 
           <button onClick={selectedRecord.id ? closeModal : handleCreateRecord}>

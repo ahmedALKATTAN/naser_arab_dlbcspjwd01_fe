@@ -234,3 +234,15 @@ h2 {
   font-weight: bold;
 }
 
+.input-field-error-message {
+  color: #d8000c;
+  font-size: 0.875rem;
+  margin-top: 5px;
+  display: block;
+}
+
+.input-error {
+  border: 1px solid #d8000c; /* Red border for invalid input */
+  background-color: #ffebeb; /* Light red background for input error */
+}
+
