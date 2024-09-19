@@ -14,6 +14,7 @@ function Home() {
   const [selectedRecord, setSelectedRecord] = useState(null);
   const [newRecord, setNewRecord] = useState({ Name: '', Color: '' });
   const [selectedRecords, setSelectedRecords] = useState([]);
+  const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
     const fetchData = async () => {
@@ -67,7 +68,13 @@ function Home() {
   };
 
   const handleDeleteRecords = async () => {
-    if (selectedRecords.length === 0) return;
+    if (selectedRecords.length === 0) {
+      setErrorMessage('Please select at least one record'); // Set the error message
+      return;
+    } 
+    else{
+     setErrorMessage(''); // Clear the error message
+    }   
 
     const recordIds = selectedRecords.map((id) => `records[]=${id}`).join('&');
 
@@ -85,12 +92,14 @@ function Home() {
   };
 
   const toggleRecordSelection = (id) => {
+    setErrorMessage(''); // Clear the error message on selection change
     if (selectedRecords.includes(id)) {
       setSelectedRecords(selectedRecords.filter((recordId) => recordId !== id));
     } else {
       setSelectedRecords([...selectedRecords, id]);
     }
   };
+  
 
   return (
     <div className="home-container">
@@ -98,10 +107,16 @@ function Home() {
 
       <div className="actions-box">
         <button onClick={() => openModal()}>Create New Car</button>
-        <button onClick={handleDeleteRecords} disabled={selectedRecords.length === 0}>
+        <button
+          onClick={handleDeleteRecords}
+          
+        >
           Delete Selected
         </button>
       </div>
+
+      {/* Error message */}
+      {errorMessage && <div className="error-message">{errorMessage}</div>}
 
       <table className="data-table">
         <thead>
@@ -120,7 +135,11 @@ function Home() {
             </tr>
           ) : (
             data.map((record) => (
-              <tr key={record.id} onDoubleClick={() => openModal(record)} style={{ cursor: 'pointer' }}>
+              <tr
+                key={record.id}
+                onDoubleClick={() => openModal(record)}
+                style={{ cursor: "pointer" }}
+              >
                 <td className="checkbox-cell">
                   <input
                     type="checkbox"
@@ -132,7 +151,10 @@ function Home() {
                 <td>{record.fields.Color}</td>
                 <td>{new Date(record.createdTime).toLocaleString()}</td>
                 <td className="icon-cell">
-                  <FontAwesomeIcon icon={faEye} onClick={() => openModal(record)} />
+                  <FontAwesomeIcon
+                    icon={faEye}
+                    onClick={() => openModal(record)}
+                  />
                 </td>
               </tr>
             ))
@@ -141,44 +163,68 @@ function Home() {
       </table>
 
       {selectedRecord && (
-        <ReactModal 
+        <ReactModal
           isOpen={modalIsOpen}
           onRequestClose={closeModal}
           contentLabel="Record Details"
           className="Modal"
           overlayClassName="Overlay"
         >
-          <button className="close-btn" onClick={closeModal}>&times;</button>
-          <h2>{selectedRecord.id ? `Details for ${selectedRecord.fields.Name}` : 'Create New Car'}</h2>
-      
+          <button className="close-btn" onClick={closeModal}>
+            &times;
+          </button>
+          <h2>
+            {selectedRecord.id
+              ? `Details for ${selectedRecord.fields.Name}`
+              : "Create New Car"}
+          </h2>
+
           <label>
             Name:
             <input
               type="text"
-              value={selectedRecord.id ? selectedRecord.fields.Name : newRecord.Name}
+              value={
+                selectedRecord.id ? selectedRecord.fields.Name : newRecord.Name
+              }
               onChange={(e) =>
                 selectedRecord.id
-                  ? setSelectedRecord({ ...selectedRecord, fields: { ...selectedRecord.fields, Name: e.target.value } })
+                  ? setSelectedRecord({
+                      ...selectedRecord,
+                      fields: {
+                        ...selectedRecord.fields,
+                        Name: e.target.value,
+                      },
+                    })
                   : setNewRecord({ ...newRecord, Name: e.target.value })
               }
             />
           </label>
-      
+
           <label>
             Color:
             <input
               type="text"
-              value={selectedRecord.id ? selectedRecord.fields.Color : newRecord.Color}
+              value={
+                selectedRecord.id
+                  ? selectedRecord.fields.Color
+                  : newRecord.Color
+              }
               onChange={(e) =>
                 selectedRecord.id
-                  ? setSelectedRecord({ ...selectedRecord, fields: { ...selectedRecord.fields, Color: e.target.value } })
+                  ? setSelectedRecord({
+                      ...selectedRecord,
+                      fields: {
+                        ...selectedRecord.fields,
+                        Color: e.target.value,
+                      },
+                    })
                   : setNewRecord({ ...newRecord, Color: e.target.value })
               }
             />
           </label>
-      
+
           <button onClick={selectedRecord.id ? closeModal : handleCreateRecord}>
-            {selectedRecord.id ? 'Close' : 'Create'}
+            {selectedRecord.id ? "Close" : "Create"}
           </button>
         </ReactModal>
       )}

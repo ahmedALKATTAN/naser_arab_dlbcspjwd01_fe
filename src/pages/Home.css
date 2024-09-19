@@ -218,3 +218,19 @@ h2 {
 .Modal button.close-btn:hover {
   color: #333;
 }
+
+.error-message {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  padding: 10px 20px;
+  color: #d8000c;
+  background-color: #ffbaba;
+  border: 1px solid #d8000c;
+  border-radius: 8px;
+  text-align: left; /* Left-align for typical notification look */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  font-weight: bold;
+}
+
