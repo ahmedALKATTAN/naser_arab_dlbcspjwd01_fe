@@ -2,33 +2,36 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import ReactModal from 'react-modal';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEye } from '@fortawesome/free-solid-svg-icons'; // Import the eye icon
+import { faEye } from '@fortawesome/free-solid-svg-icons';
 import './Home.css';
+import { API_URL, BEARER_TOKEN } from '../config';  // Import the config values
 
-ReactModal.setAppElement('#root'); // Set the app element for accessibility
+ReactModal.setAppElement('#root');
 
 function Home() {
   const [data, setData] = useState([]);
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState(null);
+  const [newRecord, setNewRecord] = useState({ Name: '', Color: '' });
+  const [selectedRecords, setSelectedRecords] = useState([]);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get('https://api.airtable.com/v0/appHGQwsSUkzdrYtW/tbltU6V97VK3tlWBN', {
+        const response = await axios.get(API_URL, {
           headers: {
-            Authorization: `Bearer patqE8BweWlIFLpQy.8ba6c1ba450fb78f97882aaa9f5969987a4936ad02398a8af7bc6d2ee75aabfa`,
+            Authorization: BEARER_TOKEN,  // Use the constant instead of hardcoding
           },
         });
         setData(response.data.records);
       } catch (error) {
-        console.error("Error fetching data from Airtable, please check errors!", error);
+        console.error("Error fetching data from Airtable", error);
       }
     };
     fetchData();
   }, []);
 
-  const openModal = (record) => {
+  const openModal = (record = { fields: { Name: '', Color: '' } }) => {
     setSelectedRecord(record);
     setModalIsOpen(true);
   };
@@ -36,14 +39,74 @@ function Home() {
   const closeModal = () => {
     setModalIsOpen(false);
     setSelectedRecord(null);
+    setNewRecord({ Name: '', Color: '' });
+  };
+
+  const handleCreateRecord = async () => {
+    try {
+      const response = await axios.post(
+        API_URL,  // Use the constant for the URL
+        {
+          records: [
+            {
+              fields: newRecord,
+            },
+          ],
+        },
+        {
+          headers: {
+            Authorization: BEARER_TOKEN,  // Use the constant for the Bearer token
+          },
+        }
+      );
+      setData([...data, response.data.records[0]]);
+      closeModal();
+    } catch (error) {
+      console.error("Error creating new record", error);
+    }
+  };
+
+  const handleDeleteRecords = async () => {
+    if (selectedRecords.length === 0) return;
+
+    const recordIds = selectedRecords.map((id) => `records[]=${id}`).join('&');
+
+    try {
+      await axios.delete(`${API_URL}?${recordIds}`, {
+        headers: {
+          Authorization: BEARER_TOKEN,  // Use the constant for the Bearer token
+        },
+      });
+      setData(data.filter((record) => !selectedRecords.includes(record.id)));
+      setSelectedRecords([]);
+    } catch (error) {
+      console.error("Error deleting records", error);
+    }
+  };
+
+  const toggleRecordSelection = (id) => {
+    if (selectedRecords.includes(id)) {
+      setSelectedRecords(selectedRecords.filter((recordId) => recordId !== id));
+    } else {
+      setSelectedRecords([...selectedRecords, id]);
+    }
   };
 
   return (
     <div className="home-container">
       <h2>Car List</h2>
+
+      <div className="actions-box">
+        <button onClick={() => openModal()}>Create New Car</button>
+        <button onClick={handleDeleteRecords} disabled={selectedRecords.length === 0}>
+          Delete Selected
+        </button>
+      </div>
+
       <table className="data-table">
         <thead>
           <tr>
+            <th></th> {/* Checkbox column */}
             <th>Name</th>
             <th>Color</th>
             <th>Created Time</th>
@@ -53,24 +116,23 @@ function Home() {
         <tbody>
           {data.length === 0 ? (
             <tr>
-              <td colSpan="4">No data available</td>
+              <td colSpan="5">No data available</td>
             </tr>
           ) : (
-            data.map(record => (
-              <tr 
-                key={record.id} 
-                onDoubleClick={() => openModal(record)} // Open modal on double click
-                style={{ cursor: 'pointer' }}
-              >
+            data.map((record) => (
+              <tr key={record.id} onDoubleClick={() => openModal(record)} style={{ cursor: 'pointer' }}>
+                <td className="checkbox-cell">
+                  <input
+                    type="checkbox"
+                    checked={selectedRecords.includes(record.id)}
+                    onChange={() => toggleRecordSelection(record.id)}
+                  />
+                </td>
                 <td>{record.fields.Name}</td>
                 <td>{record.fields.Color}</td>
                 <td>{new Date(record.createdTime).toLocaleString()}</td>
                 <td className="icon-cell">
-                  {/* Centered eye icon */}
-                  <FontAwesomeIcon
-                    icon={faEye}
-                    onClick={() => openModal(record)} // Open modal on single click of the icon
-                  />
+                  <FontAwesomeIcon icon={faEye} onClick={() => openModal(record)} />
                 </td>
               </tr>
             ))
@@ -78,7 +140,6 @@ function Home() {
         </tbody>
       </table>
 
-      {/* Modal for displaying record details */}
       {selectedRecord && (
         <ReactModal 
           isOpen={modalIsOpen}
@@ -87,10 +148,38 @@ function Home() {
           className="Modal"
           overlayClassName="Overlay"
         >
-          <h2>Details for {selectedRecord.fields.Name}</h2>
-          <p><strong>Color:</strong> {selectedRecord.fields.Color}</p>
-          <p><strong>Created Time:</strong> {new Date(selectedRecord.createdTime).toLocaleString()}</p>
-          <button onClick={closeModal}>Close</button>
+          <button className="close-btn" onClick={closeModal}>&times;</button>
+          <h2>{selectedRecord.id ? `Details for ${selectedRecord.fields.Name}` : 'Create New Car'}</h2>
+      
+          <label>
+            Name:
+            <input
+              type="text"
+              value={selectedRecord.id ? selectedRecord.fields.Name : newRecord.Name}
+              onChange={(e) =>
+                selectedRecord.id
+                  ? setSelectedRecord({ ...selectedRecord, fields: { ...selectedRecord.fields, Name: e.target.value } })
+                  : setNewRecord({ ...newRecord, Name: e.target.value })
+              }
+            />
+          </label>
+      
+          <label>
+            Color:
+            <input
+              type="text"
+              value={selectedRecord.id ? selectedRecord.fields.Color : newRecord.Color}
+              onChange={(e) =>
+                selectedRecord.id
+                  ? setSelectedRecord({ ...selectedRecord, fields: { ...selectedRecord.fields, Color: e.target.value } })
+                  : setNewRecord({ ...newRecord, Color: e.target.value })
+              }
+            />
+          </label>
+      
+          <button onClick={selectedRecord.id ? closeModal : handleCreateRecord}>
+            {selectedRecord.id ? 'Close' : 'Create'}
+          </button>
         </ReactModal>
       )}
     </div>
