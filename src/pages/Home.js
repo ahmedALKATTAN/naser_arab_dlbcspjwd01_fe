@@ -17,6 +17,28 @@ function Home() {
   const [errorMessage, setErrorMessage] = useState('');
   const [validationErrors, setValidationErrors] = useState({});
 
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const [sortField, setSortField] = useState('');
+const [sortOrder, setSortOrder] = useState('asc'); // 'asc' for ascending, 'desc' for descending
+
+
+const filteredData = data.filter(record => 
+  record.fields.Name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  record.fields.Brand.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  record.fields.Color.toLowerCase().includes(searchTerm.toLowerCase())
+);
+
+// Sort the filtered data based on the current sortField and sortOrder
+const sortedData = [...filteredData].sort((a, b) => {
+  if (a.fields[sortField] < b.fields[sortField]) {
+    return sortOrder === 'asc' ? -1 : 1;
+  }
+  if (a.fields[sortField] > b.fields[sortField]) {
+    return sortOrder === 'asc' ? 1 : -1;
+  }
+  return 0;
+});
 
   useEffect(() => {
     const fetchData = async () => {
@@ -135,6 +157,13 @@ function Home() {
     }
   };
 
+  const handleSort = (field) => {
+    const order = sortField === field && sortOrder === 'asc' ? 'desc' : 'asc';
+    setSortField(field);
+    setSortOrder(order);
+  };
+  
+
   const toggleRecordSelection = (id) => {
     setErrorMessage(''); // Clear the error message on selection change
     if (selectedRecords.includes(id)) {
@@ -190,57 +219,59 @@ function Home() {
         Total Records: {data.length}
       </div>
 
-      <table className="data-table">
-        <thead>
-          <tr>
-            <th></th> {/* Checkbox column */}
-            <th>Name</th>
-            <th>Color</th>
-            <th>Brand</th>
-            <th>Model</th>
-            <th>Year</th>
-            <th>Price</th>
-            <th>Created Time</th>
-            <th>Details</th>
-          </tr>
-        </thead>
-        <tbody>
-          {data.length === 0 ? (
-            <tr>
-              <td colSpan="5">No data available</td>
-            </tr>
-          ) : (
-            data.map((record) => (
-              <tr
-                key={record.id}
-                onDoubleClick={() => openModal(record)}
-                style={{ cursor: "pointer" }}
-              >
-                <td className="checkbox-cell">
-                  <input
-                    type="checkbox"
-                    checked={selectedRecords.includes(record.id)}
-                    onChange={() => toggleRecordSelection(record.id)}
-                  />
-                </td>
-                <td>{record.fields.Name}</td>
-                <td>{record.fields.Color}</td>
-                <td>{record.fields.Brand}</td>
-                <td>{record.fields.Model}</td>
-                <td>{record.fields.Year}</td>
-                <td>{record.fields.Price}</td>
-                <td>{new Date(record.createdTime).toLocaleString()}</td>
-                <td className="icon-cell">
-                  <FontAwesomeIcon
-                    icon={faEye}
-                    onClick={() => openModal(record)}
-                  />
-                </td>
-              </tr>
-            ))
-          )}
-        </tbody>
-      </table>
+      <input
+  type="text"
+  placeholder="Search cars..."
+  value={searchTerm}
+  onChange={(e) => setSearchTerm(e.target.value)}
+  className="search-bar"
+/>
+
+<table className="data-table">
+  <thead>
+    <tr>
+      <th></th> {/* Checkbox column */}
+      <th onClick={() => handleSort('Name')}>Name {sortField === 'Name' ? (sortOrder === 'asc' ? '▲' : '▼') : ''}</th>
+      <th onClick={() => handleSort('Color')}>Color {sortField === 'Color' ? (sortOrder === 'asc' ? '▲' : '▼') : ''}</th>
+      <th onClick={() => handleSort('Brand')}>Brand {sortField === 'Brand' ? (sortOrder === 'asc' ? '▲' : '▼') : ''}</th>
+      <th onClick={() => handleSort('Model')}>Model {sortField === 'Model' ? (sortOrder === 'asc' ? '▲' : '▼') : ''}</th>
+      <th onClick={() => handleSort('Year')}>Year {sortField === 'Year' ? (sortOrder === 'asc' ? '▲' : '▼') : ''}</th>
+      <th onClick={() => handleSort('Price')}>Price {sortField === 'Price' ? (sortOrder === 'asc' ? '▲' : '▼') : ''}</th>
+      <th>Created Time</th>
+      <th>Details</th>
+    </tr>
+  </thead>
+  <tbody>
+    {sortedData.length === 0 ? (
+      <tr>
+        <td colSpan="9">No data available</td>
+      </tr>
+    ) : (
+      sortedData.map((record) => (
+        <tr key={record.id} onDoubleClick={() => openModal(record)} style={{ cursor: 'pointer' }}>
+          <td className="checkbox-cell">
+            <input
+              type="checkbox"
+              checked={selectedRecords.includes(record.id)}
+              onChange={() => toggleRecordSelection(record.id)}
+            />
+          </td>
+          <td>{record.fields.Name}</td>
+          <td>{record.fields.Color}</td>
+          <td>{record.fields.Brand}</td>
+          <td>{record.fields.Model}</td>
+          <td>{record.fields.Year}</td>
+          <td>{record.fields.Price}</td>
+          <td>{new Date(record.createdTime).toLocaleString()}</td>
+          <td className="icon-cell">
+            <FontAwesomeIcon icon={faEye} onClick={() => openModal(record)} />
+          </td>
+        </tr>
+      ))
+    )}
+  </tbody>
+</table>
+
 
       {selectedRecord && (
         <ReactModal
