@@ -186,3 +186,12 @@ button:active::after {
     opacity: 0;
   }
 }
+
+.record-count {
+  text-align: right; /* Align to the right */
+  font-size: 1rem;
+  color: #333;
+  margin-bottom: 10px; /* Space between the record count and the table */
+  font-weight: bold;
+}
+

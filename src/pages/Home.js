@@ -12,7 +12,7 @@ function Home() {
   const [data, setData] = useState([]);
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState(null);
-  const [newRecord, setNewRecord] = useState({ Name: '', Color: '', Brand: '', Model: '', Year: '' });
+  const [newRecord, setNewRecord] = useState({ Name: '', Color: '', Brand: '', Model: '', Year: '',Price: '' });
   const [selectedRecords, setSelectedRecords] = useState([]);
   const [errorMessage, setErrorMessage] = useState('');
   const [validationErrors, setValidationErrors] = useState({});
@@ -34,7 +34,7 @@ function Home() {
     fetchData();
   }, []);
 
-  const openModal = (record = { fields: { Name: '', Color: '', Brand: '', Model: '', Year: '' } }) => {
+  const openModal = (record = { fields: { Name: '', Color: '', Brand: '', Model: '', Year: '',Price: '' } }) => {
     setSelectedRecord(record);
     setNewRecord({
       Name: record.fields.Name || '',
@@ -42,6 +42,7 @@ function Home() {
       Brand: record.fields.Brand || '',
       Model: record.fields.Model || '',
       Year: record.fields.Year || '',
+      Price: record.fields.Price || '',
     });
     setModalIsOpen(true);
   };
@@ -50,7 +51,7 @@ function Home() {
   const closeModal = () => {
     setModalIsOpen(false);
     setSelectedRecord(null);
-    setNewRecord({ Name: '', Color: '', Brand: '', Model: '', Year: '' });
+    setNewRecord({ Name: '', Color: '', Brand: '', Model: '', Year: '',Price: '' });
   };
 
   const handleCreateRecord = async () => {
@@ -151,6 +152,12 @@ function Home() {
     if (!newRecord.Color) errors.Color = 'Color is required';
     if (!newRecord.Brand) errors.Brand = 'Brand is required';
     if (!newRecord.Model) errors.Model = 'Model is required';
+    if (!newRecord.Price) {
+      errors.Price = 'Price is required';
+    } else if (isNaN(newRecord.Price) || Number(newRecord.Price) < 0) {
+      errors.Price = 'Price must be a number greater than or equal to 0';
+    }
+    
   
     // Validate Year (between 1900 and current year)
     if (!newRecord.Year) {
@@ -179,6 +186,10 @@ function Home() {
       {/* Error message */}
       {errorMessage && <div className="error-message">{errorMessage}</div>}
 
+      <div className="record-count">
+        Total Records: {data.length}
+      </div>
+
       <table className="data-table">
         <thead>
           <tr>
@@ -188,6 +199,7 @@ function Home() {
             <th>Brand</th>
             <th>Model</th>
             <th>Year</th>
+            <th>Price</th>
             <th>Created Time</th>
             <th>Details</th>
           </tr>
@@ -216,6 +228,7 @@ function Home() {
                 <td>{record.fields.Brand}</td>
                 <td>{record.fields.Model}</td>
                 <td>{record.fields.Year}</td>
+                <td>{record.fields.Price}</td>
                 <td>{new Date(record.createdTime).toLocaleString()}</td>
                 <td className="icon-cell">
                   <FontAwesomeIcon
@@ -331,12 +344,32 @@ function Home() {
             )}
           </label>
 
+          <label>
+            Price:
+            <div style={{ display: "flex", alignItems: "center" }}>
+              <span style={{ marginRight: "5px" }}>€</span>
+              <input
+                type="text"
+                value={newRecord.Price}
+                onChange={(e) =>
+                  setNewRecord({ ...newRecord, Price: e.target.value })
+                }
+                className={validationErrors.Price ? "input-error" : ""}
+                style={{ flex: 1 }} // Ensures the input takes the available space next to the symbol
+              />
+            </div>
+            {validationErrors.Price && (
+              <span className="input-field-error-message">
+                {validationErrors.Price}
+              </span>
+            )}
+          </label>
+
           {selectedRecord && selectedRecord.id ? (
             <button onClick={handleUpdateRecord}>Save</button> // Show Save button for editing
           ) : (
             <button onClick={handleCreateRecord}>Create</button> // Show Create button for new record
           )}
-
         </ReactModal>
       )}
     </div>
