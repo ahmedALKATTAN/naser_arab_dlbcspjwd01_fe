@@ -12,7 +12,7 @@ function Home() {
   const [data, setData] = useState([]);
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState(null);
-  const [newRecord, setNewRecord] = useState({ Name: '', Color: '' });
+  const [newRecord, setNewRecord] = useState({ Name: '', Color: '', Brand: '', Model: '', Year: '' });
   const [selectedRecords, setSelectedRecords] = useState([]);
   const [errorMessage, setErrorMessage] = useState('');
   const [validationErrors, setValidationErrors] = useState({});
@@ -34,15 +34,23 @@ function Home() {
     fetchData();
   }, []);
 
-  const openModal = (record = { fields: { Name: '', Color: '' } }) => {
+  const openModal = (record = { fields: { Name: '', Color: '', Brand: '', Model: '', Year: '' } }) => {
     setSelectedRecord(record);
+    setNewRecord({
+      Name: record.fields.Name || '',
+      Color: record.fields.Color || '',
+      Brand: record.fields.Brand || '',
+      Model: record.fields.Model || '',
+      Year: record.fields.Year || '',
+    });
     setModalIsOpen(true);
   };
+  
 
   const closeModal = () => {
     setModalIsOpen(false);
     setSelectedRecord(null);
-    setNewRecord({ Name: '', Color: '' });
+    setNewRecord({ Name: '', Color: '', Brand: '', Model: '', Year: '' });
   };
 
   const handleCreateRecord = async () => {
@@ -71,6 +79,36 @@ function Home() {
       console.error("Error creating new record", error);
     }
   };
+
+  const handleUpdateRecord = async () => {
+    if (!validateFields()) {
+      return; // Don't submit if there are validation errors
+    }
+  
+    try {
+      const response = await axios.patch(
+        `${API_URL}/${selectedRecord.id}`, // PATCH request with the correct URL structure
+        {
+          fields: newRecord, // Send only the updated fields in the body
+        },
+        {
+          headers: {
+            Authorization: BEARER_TOKEN,
+          },
+        }
+      );
+  
+      // Update the data with the modified record
+      const updatedRecords = data.map((record) =>
+        record.id === selectedRecord.id ? response.data : record
+      );
+      setData(updatedRecords);
+      closeModal();
+    } catch (error) {
+      console.error("Error updating record", error);
+    }
+  };
+  
 
   const handleDeleteRecords = async () => {
     if (selectedRecords.length === 0) {
@@ -293,9 +331,12 @@ function Home() {
             )}
           </label>
 
-          <button onClick={selectedRecord.id ? closeModal : handleCreateRecord}>
-            {selectedRecord.id ? "Close" : "Create"}
-          </button>
+          {selectedRecord && selectedRecord.id ? (
+            <button onClick={handleUpdateRecord}>Save</button> // Show Save button for editing
+          ) : (
+            <button onClick={handleCreateRecord}>Create</button> // Show Create button for new record
+          )}
+
         </ReactModal>
       )}
     </div>
